@@ -1,6 +1,6 @@
 # Issuu Downloader Bot
 
-A Telegram bot to download Issuu documents as PDFs. Built with Python, this bot allows users to send Issuu document URLs and receive the corresponding PDF files.
+A Telegram bot to download [Issuu](https://issuu.com) documents as PDFs. Built with Python, this bot allows users to send Issuu document URLs and receive the corresponding PDF files.
 
 ## Features
 - Download Issuu documents as PDF via Telegram
