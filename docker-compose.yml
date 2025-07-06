@@ -1,0 +1,13 @@
+name: issuu-downloader-bot
+services:
+  issuu-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: srajasimman/issuu-downloader-bot:latest
+    container_name: issuu-downloader-bot
+    env_file:
+      - .env
+    volumes:
+      - ./downloads:/app/downloads
+    restart: unless-stopped
