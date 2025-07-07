@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: srajasimman/issuu-downloader-bot:latest
+    image: ghcr.io/srajasimman/srajasimman/issuu-downloader-bot
     container_name: issuu-downloader-bot
     env_file:
       - .env
