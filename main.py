@@ -9,15 +9,13 @@ from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 
-load_dotenv()  # Load environment variables from .env file
+load_dotenv()
 
-# --- Logging ---
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
-# --- Issuu Downloader Logic (adapted from main.py) ---
 def download_issuu_pdf(url, output_path):
     match = re.search(r'issuu\.com/([^/]+)/docs/([^/]+)', url)
     if not match:
@@ -60,14 +58,19 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not match:
         await update.message.reply_text("Please send a valid Issuu document URL.")
         return
-    await update.message.reply_text("Downloading your document, please wait...")
     username, document_id = match.groups()
     try:
-        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_pdf:
-            tmp_pdf.name = f"{username}_{document_id}.pdf"
-            download_issuu_pdf(url, tmp_pdf.name)
-            await update.message.reply_document(document=open(tmp_pdf.name, "rb"))
-        os.remove(tmp_pdf.name)
+        downloads_dir = 'downloads'
+        if not os.path.exists(downloads_dir):
+            os.makedirs(downloads_dir)
+        pdf_path = os.path.join(downloads_dir, f"{username}_{document_id}.pdf")
+        if os.path.exists(pdf_path):
+            await update.message.reply_text("PDF already exists. Sending it back to you...")
+            await update.message.reply_document(document=open(pdf_path, "rb"))
+            return
+        await update.message.reply_text("Downloading your document, please wait...")
+        download_issuu_pdf(url, pdf_path)
+        await update.message.reply_document(document=open(pdf_path, "rb"))
     except Exception as e:
         logger.error(f"Error: {e}")
         await update.message.reply_text(f"Failed to download: {e}")
@@ -125,7 +128,14 @@ if __name__ == "__main__":
     parser.add_argument('--url', help="Issuu document URL or path to a file containing URLs", default=None, required=False)
     parser.add_argument('--file', help="Path to a file containing Issuu URLs", default=None, required=False)
     parser.add_argument('--output_dir', help="Directory to save the downloaded PDFs", default='downloads', required=False)
+    parser.add_argument('--debug', action='store_true', help="Enable debug logging")
     args = parser.parse_args()
+
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+        for handler in logging.getLogger().handlers:
+            handler.setLevel(logging.DEBUG)
+        logger.debug("Debug logging enabled.")
 
     if args.bot:
         bot()
