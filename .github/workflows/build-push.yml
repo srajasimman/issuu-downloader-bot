@@ -1,0 +1,37 @@
+name: Build and Push Docker Image
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build & push Docker image
+        uses: mr-smithers-excellent/docker-build-push@v6
+        with:
+          image: ${{ github.repository }}
+          registry: ghcr.io
+          addLatest: true
+          enableBuildKit: true
+          multiPlatform: true
+          platform: linux/amd64,linux/arm64
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          pushImage: ${{ github.event_name != 'pull_request' }}
