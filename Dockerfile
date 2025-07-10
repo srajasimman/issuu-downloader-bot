@@ -29,5 +29,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
   uv sync --locked
 
 # Set the entrypoint to run the application
-ENTRYPOINT ["uv", "run", "main.py", "bot"]
+ENTRYPOINT ["uv", "run", "main.py"]
 
+# Default arguments for ENTRYPOINT
+CMD ["bot"]
